@@ -27,7 +27,7 @@ func (r *Repl) commandHelp() error {
 	}
 
 	for c := range r.commands {
-		fmt.Println(c, r.commands[c].description)
+		fmt.Println(c, ": ", r.commands[c].description)
 	}
 
 	return nil
@@ -39,7 +39,7 @@ func (r *Repl) commandExit() error {
 	return nil
 }
 
-func Run() {
+func runRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	repl := Repl{
