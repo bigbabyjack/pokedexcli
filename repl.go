@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 )
@@ -18,46 +17,21 @@ type Repl struct {
 	commands map[string]cliCommand
 }
 
-func (r *Repl) commandHelp() error {
-	fmt.Println("Welcome to Pokedex!")
-	fmt.Println("Usage:")
-
-	if len(r.commands) == 0 {
-		return errors.New("Repl has no commands!")
-	}
-
-	for c := range r.commands {
-		fmt.Println(c, ": ", r.commands[c].description)
-	}
-
-	return nil
-}
-
-func (r *Repl) commandExit() error {
-	fmt.Println("Exiting Pokedex. Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func runRepl() {
+func newRepl() Repl {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	repl := Repl{
 		scanner:  scanner,
 		commands: make(map[string]cliCommand),
 	}
+	repl.getCommands()
 
-	repl.commands["help"] = cliCommand{
-		name:        "help",
-		description: "Displays a help message",
-		callback:    repl.commandHelp,
-	}
+	return repl
+}
 
-	repl.commands["exit"] = cliCommand{
-		name:        "exit",
-		description: "Exit the Pokedex",
-		callback:    repl.commandExit,
-	}
+func runRepl() {
+
+	repl := newRepl()
 
 	for {
 		fmt.Print("Pokedex > ")
