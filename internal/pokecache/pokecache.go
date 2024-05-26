@@ -17,7 +17,7 @@ type cacheEntry struct {
 }
 
 type Cache struct {
-	mu        *sync.RWMutex
+	mu        *sync.Mutex
 	createdAt time.Time
 	cache     map[string]cacheEntry
 	duration  time.Duration
@@ -25,8 +25,8 @@ type Cache struct {
 
 // NewCache creates a new Cache
 // Returns a pointer to the new Cache
-func NewCache(d time.Duration) Cache {
-	var sync = sync.RWMutex{}
+func NewCache(d time.Duration) *Cache {
+	var sync = sync.Mutex{}
 	c := Cache{
 		mu:        &sync,
 		createdAt: getCreatedAt(),
@@ -35,7 +35,7 @@ func NewCache(d time.Duration) Cache {
 	}
 	go c.reapLoop()
 
-	return c
+	return &c
 }
 
 func (c *Cache) Add(key string, val []byte) error {
@@ -52,22 +52,9 @@ func (c *Cache) Add(key string, val []byte) error {
 
 }
 
-func (c *Cache) cleanup(time time.Time) error {
+func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	fmt.Println("cleaning up cache")
-	for key, entry := range c.cache {
-		if time.Sub(entry.createdAt) > c.duration {
-			c.Delete(key)
-		}
-	}
-	return nil
-
-}
-
-func (c *Cache) Get(key string) ([]byte, bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
 	entry, ok := c.cache[key]
 	if !ok {
 		return nil, false
@@ -75,22 +62,22 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	return entry.val, true
 }
 
-func (c *Cache) Delete(key string) error {
+func (c *Cache) reap() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if _, ok := c.cache[key]; !ok {
-		return fmt.Errorf("Failed deleting key: %s", key)
+	for key, entry := range c.cache {
+		if getCreatedAt().Sub(entry.createdAt) > c.duration {
+			delete(c.cache, key)
+		}
 	}
-	delete(c.cache, key)
 	return nil
-
 }
 
 func (c *Cache) reapLoop() {
 	fmt.Println("readloop started")
 	ticker := time.NewTicker(c.duration)
 	for range ticker.C {
-		c.cleanup(getCreatedAt())
+		c.reap()
 	}
 }

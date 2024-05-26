@@ -55,57 +55,6 @@ func TestAddGet(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
-	cache := NewCache(time.Nanosecond * 100)
-
-	// Add an entry to the cache
-	cache.Add("key1", []byte("value1"))
-
-	// Delete the entry from the cache
-	cache.Delete("key1")
-
-	// Check if the entry is deleted
-	if _, ok := cache.cache["key1"]; ok {
-		t.Fatalf("Expected cache entry to be deleted")
-	}
-}
-
-func TestCleanup(t *testing.T) {
-	cache := NewCache(time.Millisecond * 50)
-
-	// Add an entry to the cache
-	cache.Add("key1", []byte("value1"))
-	cache.Add("key2", []byte("value2"))
-
-	// Call the cleanup function
-	time.Sleep(time.Millisecond * 100)
-	cache.cleanup(time.Now())
-
-	// Check if the entry is deleted
-	if _, ok := cache.cache["key1"]; ok {
-		t.Fatalf("Expected cache entry to be deleted")
-	}
-	if _, ok := cache.cache["key2"]; ok {
-		t.Fatalf("Expected cache entry to be deleted")
-	}
-
-	// Add an entry to the cache
-	cache.Add("key3", []byte("value3"))
-	cache.Add("key4", []byte("value4"))
-
-	// Call the cleanup function
-	cache.cleanup(time.Now())
-
-	// Check if the entry is deleted
-	if _, ok := cache.cache["key3"]; !ok {
-		t.Fatalf("Expected cache entry to be cached")
-	}
-	if _, ok := cache.cache["key4"]; !ok {
-		t.Fatalf("Expected cache entry to be cached")
-	}
-
-}
-
 func TestReapLoop(t *testing.T) {
 	const baseTime = 5 * time.Millisecond
 	const waitTime = baseTime + 5*time.Millisecond
