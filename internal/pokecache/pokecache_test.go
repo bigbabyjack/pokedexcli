@@ -1,6 +1,7 @@
 package pokecache
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -26,48 +27,36 @@ func TestNewCache(t *testing.T) {
 		t.Fatalf("Expected empty cache slice, got %d entries", len(cache.cache))
 	}
 }
-
-// Test the Add function
-func TestAdd(t *testing.T) {
-	cache := NewCache(time.Minute * 7)
-
-	// Add an entry to the cache
-	cache.Add("key1", []byte("value1"))
-
-	// Check if cache has one entry
-	if len(cache.cache) != 1 {
-		t.Fatalf("Expected 1 entry in cache, got %d", len(cache.cache))
+func TestAddGet(t *testing.T) {
+	const interval = 5 * time.Second
+	cases := []struct {
+		key string
+		val []byte
+	}{
+		{
+			key: "https://example.com",
+			val: []byte("testdata"),
+		},
+		{
+			key: "https://example.com/path",
+			val: []byte("moretestdata"),
+		},
 	}
 
-	// Check the contents of the entry
-	entry := cache.cache["key1"]
-	if string(entry.val) != "value1" {
-		t.Fatalf("Expected cache entry value 'value1', got '%s'", string(entry.val))
-	}
-
-	// Check if createdAt is set correctly (within a reasonable range)
-	now := time.Now()
-	if entry.createdAt.Before(now.Add(-time.Second)) || entry.createdAt.After(now) {
-		t.Fatalf("Expected createdAt to be around %v, got %v", now, entry.createdAt)
-	}
-}
-
-// Test the Get function
-func TestGet(t *testing.T) {
-	cache := NewCache(time.Minute * 7)
-
-	// Add an entry to the cache
-	cache.Add("key1", []byte("value1"))
-
-	// Get the entry from the cache
-	val, err := cache.Get("key1")
-
-	// Check if the entry is returned correctly
-	if err != nil {
-		t.Fatalf("Error getting entry: %v", err)
-	}
-	if string(val) != "value1" {
-		t.Fatalf("Expected cache entry value 'value1', got '%s'", string(val))
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("Test case %v", i), func(t *testing.T) {
+			cache := NewCache(interval)
+			cache.Add(c.key, c.val)
+			val, ok := cache.Get(c.key)
+			if !ok {
+				t.Errorf("expected to find key")
+				return
+			}
+			if string(val) != string(c.val) {
+				t.Errorf("expected to find value")
+				return
+			}
+		})
 	}
 }
 
@@ -120,4 +109,25 @@ func TestCleanup(t *testing.T) {
 		t.Fatalf("Expected cache entry to be cached")
 	}
 
+}
+
+func TestReapLoop(t *testing.T) {
+	const baseTime = 5 * time.Millisecond
+	const waitTime = baseTime + 5*time.Millisecond
+	cache := NewCache(baseTime)
+	cache.Add("https://example.com", []byte("testdata"))
+
+	_, ok := cache.Get("https://example.com")
+	if !ok {
+		t.Errorf("expected to find key")
+		return
+	}
+
+	time.Sleep(waitTime)
+
+	_, ok = cache.Get("https://example.com")
+	if ok {
+		t.Errorf("expected to not find key")
+		return
+	}
 }
