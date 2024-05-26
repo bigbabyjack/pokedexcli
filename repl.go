@@ -9,17 +9,22 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*Config) error
 }
 
 type Repl struct {
 	scanner  *bufio.Scanner
 	commands map[string]cliCommand
+	config   Config
+}
+
+type Config struct {
+	Next     string
+	Previous string
 }
 
 func newRepl() Repl {
 	scanner := bufio.NewScanner(os.Stdin)
-
 	repl := Repl{
 		scanner:  scanner,
 		commands: make(map[string]cliCommand),
@@ -32,7 +37,10 @@ func newRepl() Repl {
 func runRepl() {
 
 	repl := newRepl()
-
+	config := Config{
+		Next:     "",
+		Previous: "",
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		if !repl.scanner.Scan() {
@@ -41,7 +49,7 @@ func runRepl() {
 		input := repl.scanner.Text()
 
 		if cmd, exists := repl.commands[input]; exists {
-			if err := cmd.callback(); err != nil {
+			if err := cmd.callback(&config); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		} else {

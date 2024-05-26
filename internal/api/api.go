@@ -24,7 +24,6 @@ func makeGetRequest(s string) ([]byte, error) {
 		return nil, errors.New("Error in GET request.")
 	}
 	defer resp.Body.Close()
-	fmt.Println("Response status:", resp.Status)
 	body, err := io.ReadAll(resp.Body)
 	return body, nil
 
@@ -39,13 +38,6 @@ func GetPokemonLocation(url string) (PokemonLocationRequest, error) {
 
 	if err := json.Unmarshal(body, &request); err != nil {
 		return request, fmt.Errorf("failed to parse JSON: %w", err)
-	}
-
-	fmt.Printf("Count: %d\n", request.Count)
-	fmt.Printf("Next: %s\n", request.Next)
-	fmt.Printf("Previous: %s\n", request.Previous)
-	for _, location := range request.Locations {
-		fmt.Printf("Location: %s, URL: %s\n", location.Location, location.URL)
 	}
 
 	return request, nil
