@@ -25,16 +25,15 @@ type Cache struct {
 
 // NewCache creates a new Cache
 // Returns a pointer to the new Cache
-func NewCache(d time.Duration) *Cache {
-	var sync = &sync.RWMutex{}
-	c := &Cache{
-		mu:        sync,
+func NewCache(d time.Duration) Cache {
+	var sync = sync.RWMutex{}
+	c := Cache{
+		mu:        &sync,
 		createdAt: getCreatedAt(),
 		cache:     make(map[string]cacheEntry),
 		duration:  d,
 	}
-	fmt.Println("cache created")
-	c.readLoop()
+	go c.reapLoop()
 
 	return c
 }
@@ -88,7 +87,7 @@ func (c *Cache) Delete(key string) error {
 
 }
 
-func (c *Cache) readLoop() {
+func (c *Cache) reapLoop() {
 	fmt.Println("readloop started")
 	ticker := time.NewTicker(c.duration)
 	for range ticker.C {

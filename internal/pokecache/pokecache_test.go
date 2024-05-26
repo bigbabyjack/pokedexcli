@@ -10,11 +10,6 @@ import (
 func TestNewCache(t *testing.T) {
 	cache := NewCache(time.Minute * 7)
 
-	// Check if cache is not nil
-	if cache == nil {
-		t.Fatal("NewCache() returned nil")
-	}
-
 	// Check if createdAt is set correctly (within a reasonable range)
 	now := time.Now()
 	if cache.createdAt.Before(now.Add(-time.Second)) || cache.createdAt.After(now) {
