@@ -4,17 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bigbabyjack/pokedexcli/internal/pokecache"
 )
 
-type area string
-
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(area, *config) error
+	callback    func(*string, *config) error
 }
 
 type Repl struct {
@@ -43,9 +42,13 @@ func runRepl(cfg *config) {
 			break
 		}
 		input := repl.scanner.Text()
-
-		if cmd, exists := repl.commands[input]; exists {
-			if err := cmd.callback(cfg); err != nil {
+		inputSplit := strings.Split(input, " ")
+		if cmd, exists := repl.commands[inputSplit[0]]; exists {
+			var arg string
+			if len(inputSplit) > 1 {
+				arg = inputSplit[1]
+			}
+			if err := cmd.callback(&arg, cfg); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		} else {
