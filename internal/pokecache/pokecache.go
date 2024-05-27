@@ -2,7 +2,6 @@ package pokecache
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -26,23 +25,20 @@ type Cache struct {
 // NewCache creates a new Cache
 // Returns a pointer to the new Cache
 func NewCache(d time.Duration) *Cache {
-	var sync = sync.Mutex{}
-	c := Cache{
-		mu:        &sync,
-		createdAt: getCreatedAt(),
+	c := &Cache{
+		mu:        &sync.Mutex{},
+		createdAt: time.Now().UTC(),
 		cache:     make(map[string]cacheEntry),
 		duration:  d,
 	}
-	go c.reapLoop()
+	go c.reapLoop(c.duration)
 
-	return &c
+	return c
 }
 
 func (c *Cache) Add(key string, val []byte) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	fmt.Println("adding key", key)
 
 	c.cache[key] = cacheEntry{
 		createdAt: getCreatedAt(),
@@ -53,8 +49,6 @@ func (c *Cache) Add(key string, val []byte) error {
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	entry, ok := c.cache[key]
 	if !ok {
 		return nil, false
@@ -62,22 +56,22 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	return entry.val, true
 }
 
-func (c *Cache) reap() error {
+func (c *Cache) reap(interval time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	timeCutoff := time.Now().UTC().Add(-interval)
 
 	for key, entry := range c.cache {
-		if getCreatedAt().Sub(entry.createdAt) > c.duration {
+		if (entry.createdAt).Before(timeCutoff) {
 			delete(c.cache, key)
 		}
 	}
 	return nil
 }
 
-func (c *Cache) reapLoop() {
-	fmt.Println("readloop started")
+func (c *Cache) reapLoop(interval time.Duration) {
 	ticker := time.NewTicker(c.duration)
 	for range ticker.C {
-		c.reap()
+		c.reap(interval)
 	}
 }

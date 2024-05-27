@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/bigbabyjack/pokedexcli/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -16,6 +19,7 @@ type Repl struct {
 	scanner  *bufio.Scanner
 	commands map[string]cliCommand
 	config   Config
+	cache    *pokecache.Cache
 }
 
 type Config struct {
@@ -28,6 +32,14 @@ func newRepl() Repl {
 	repl := Repl{
 		scanner:  scanner,
 		commands: make(map[string]cliCommand),
+		config: struct {
+			Next     string
+			Previous string
+		}{
+			Next:     "",
+			Previous: "",
+		},
+		cache: pokecache.NewCache(time.Minute * 5),
 	}
 	repl.getCommands()
 
@@ -37,10 +49,6 @@ func newRepl() Repl {
 func runRepl() {
 
 	repl := newRepl()
-	config := Config{
-		Next:     "",
-		Previous: "",
-	}
 	for {
 		fmt.Print("Pokedex > ")
 		if !repl.scanner.Scan() {
@@ -49,7 +57,7 @@ func runRepl() {
 		input := repl.scanner.Text()
 
 		if cmd, exists := repl.commands[input]; exists {
-			if err := cmd.callback(&config); err != nil {
+			if err := cmd.callback(&repl.config); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		} else {

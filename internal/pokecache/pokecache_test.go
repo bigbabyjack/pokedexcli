@@ -67,7 +67,7 @@ func TestReapLoop(t *testing.T) {
 		return
 	}
 
-	time.Sleep(waitTime)
+	time.Sleep(baseTime)
 
 	_, ok = cache.Get("https://example.com")
 	if ok {
