@@ -8,13 +8,24 @@ import (
 )
 
 func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, error) {
-	endpoint := "/location-area"
+	endpoint := "/location-area?offset=0&limit=20"
 	fullURL := baseURL + endpoint
 
 	if pageURL != nil {
 		fullURL = *pageURL
 	}
 
+	if dat, ok := c.cache.Get(fullURL); ok {
+		fmt.Println("Found cached locations...")
+		locationAreasResponse := LocationAreasResponse{}
+		err := json.Unmarshal(dat, &locationAreasResponse)
+		if err != nil {
+			return LocationAreasResponse{}, err
+		}
+
+		return locationAreasResponse, nil
+	}
+	fmt.Println("Did not find cached location. Fetching from server.")
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return LocationAreasResponse{}, err
@@ -31,6 +42,8 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, erro
 	}
 
 	dat, err := io.ReadAll(resp.Body)
+	c.cache.Add(fullURL, dat)
+	fmt.Printf("Added %s to cache.", fullURL)
 	if err != nil {
 		return LocationAreasResponse{}, err
 	}

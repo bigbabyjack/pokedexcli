@@ -30,6 +30,7 @@ func commandMapb(cfg *config) error {
 	if err != nil {
 		return fmt.Errorf("Error getting locations: %v", err)
 	}
+
 	fmt.Println("Location Areas:")
 	for _, area := range resp.Results {
 		fmt.Printf(" - %s\n", area.Name)
