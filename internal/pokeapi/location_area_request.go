@@ -16,7 +16,6 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, erro
 	}
 
 	if dat, ok := c.cache.Get(fullURL); ok {
-		fmt.Println("Found cached locations...")
 		locationAreasResponse := LocationAreasResponse{}
 		err := json.Unmarshal(dat, &locationAreasResponse)
 		if err != nil {
@@ -25,7 +24,6 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, erro
 
 		return locationAreasResponse, nil
 	}
-	fmt.Println("Did not find cached location. Fetching from server.")
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return LocationAreasResponse{}, err
@@ -43,7 +41,6 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, erro
 
 	dat, err := io.ReadAll(resp.Body)
 	c.cache.Add(fullURL, dat)
-	fmt.Printf("Added %s to cache.", fullURL)
 	if err != nil {
 		return LocationAreasResponse{}, err
 	}
@@ -56,28 +53,3 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreasResponse, erro
 
 	return locationAreasResponse, nil
 }
-
-// func (c *Client) makeGetRequest(s string) ([]byte, error) {
-// 	resp, err := http.Get(s)
-// 	if err != nil {
-// 		return nil, errors.New("Error in GET request.")
-// 	}
-// 	defer resp.Body.Close()
-// 	body, err := io.ReadAll(resp.Body)
-// 	return body, nil
-//
-// }
-//
-// func (c *Client) GetPokemonLocation(url string) (LocationAreasRequest, error) {
-// 	body, err := c.makeGetRequest(url)
-// 	var request LocationAreasRequest
-// 	if err != nil {
-// 		return request, fmt.Errorf("[FAILURE] failed GET request: %w", err)
-// 	}
-//
-// 	if err := json.Unmarshal(body, &request); err != nil {
-// 		return request, fmt.Errorf("failed to parse JSON: %w", err)
-// 	}
-//
-// 	return request, nil
-// }
