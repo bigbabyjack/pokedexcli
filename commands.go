@@ -1,28 +1,31 @@
 package main
 
-func (r *Repl) getCommands() {
-	r.commands["help"] = cliCommand{
+func getCommands() map[string]cliCommand {
+	commands := map[string]cliCommand{}
+	commands["help"] = cliCommand{
 		name:        "help",
 		description: "Displays a help message",
-		callback:    r.commandHelp,
+		callback:    commandHelp,
 	}
 
-	r.commands["exit"] = cliCommand{
+	commands["exit"] = cliCommand{
 		name:        "exit",
 		description: "Exit the Pokedex",
-		callback:    r.commandExit,
+		callback:    commandExit,
 	}
 
-	r.commands["map"] = cliCommand{
+	commands["map"] = cliCommand{
 		name:        "map",
 		description: "Display locations.",
-		callback:    r.commandMap,
+		callback:    commandMap,
 	}
 
-	r.commands["mapb"] = cliCommand{
+	commands["mapb"] = cliCommand{
 		name:        "mapb",
 		description: "Display previous locations.",
-		callback:    r.commandMapb,
+		callback:    commandMapb,
 	}
+
+	return commands
 
 }

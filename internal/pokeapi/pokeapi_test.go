@@ -1,4 +1,4 @@
-package api
+package pokeapi
 
 import (
 	"encoding/json"
@@ -39,7 +39,7 @@ func TestMakeGetRequest(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	var response PokemonLocationRequest
+	var response LocationAreasRequest
 	if err := json.Unmarshal(body, &response); err != nil {
 		t.Fatalf("Expected no error in unmarshalling, got %v", err)
 	}

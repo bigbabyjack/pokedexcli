@@ -1,20 +1,15 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 )
 
-func (r *Repl) commandHelp(config *Config) error {
+func commandHelp(config *config) error {
 	fmt.Println("Welcome to Pokedex!")
 	fmt.Println("Usage:")
 
-	if len(r.commands) == 0 {
-		return errors.New("Repl has no commands!")
-	}
-
-	for c := range r.commands {
-		fmt.Println(c, ": ", r.commands[c].description)
+	for _, cmd := range getCommands() {
+		fmt.Println(cmd.name, ": ", cmd.description)
 	}
 
 	return nil

@@ -3,72 +3,39 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/bigbabyjack/pokedexcli/internal/api"
+	"log"
 )
 
-func (r *Repl) commandMap(config *Config) error {
-	// base URL for location API
-	url := "https://pokeapi.co/api/v2/location"
-
-	//if we already have a next page to get, go to it
-	if config.Next != "" {
-		url = config.Next
-	}
-	locations, ok := r.cache.Get(url)
-	if ok {
-		fmt.Println("Found cached map.")
-		for _, l := range locations {
-			fmt.Println(l)
-		}
-		return nil
-	}
-	fmt.Println("Fetching from API")
-
-	// if it isn't in the cache, get it from the api
-	fmt.Println("Requesting api.")
-	request, err := api.GetPokemonLocation(url)
+func commandMap(cfg *config) error {
+	resp, err := cfg.pokeapiClient.ListLocationAreas(cfg.NextLocationURL)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-
-	for _, location := range request.Locations {
-		fmt.Println(location.Location)
-		r.cache.Add(url, []byte(location.Location))
+	fmt.Println("Location Areas:")
+	for _, area := range resp.Results {
+		fmt.Printf(" - %s\n", area.Name)
 	}
-	// update the config
-	config.Next = request.Next
-	config.Previous = request.Previous
-
-	// print out the locations
+	cfg.NextLocationURL = resp.Next
+	cfg.PreviousLocationURL = resp.Previous
 	return nil
+
 }
 
-func (r *Repl) commandMapb(config *Config) error {
-	if config.Previous == "" {
-		return errors.New("You are on the first page of locations.")
+func commandMapb(cfg *config) error {
+	if cfg.PreviousLocationURL == nil {
+		return errors.New("You are already at the first locations.")
 	}
-	url := config.Previous
 
-	// check if the url is in the cache and return if it is
-	locations, ok := r.cache.Get(url)
-	if ok {
-		fmt.Println("Found cached map.")
-		for _, l := range locations {
-			fmt.Println(l)
-		}
-		return nil
-	}
-	fmt.Println("Fetching from API")
-
-	request, err := api.GetPokemonLocation(url)
+	resp, err := cfg.pokeapiClient.ListLocationAreas(cfg.PreviousLocationURL)
 	if err != nil {
-		return errors.New("Unable to get locations.")
+		return fmt.Errorf("Error getting locations: %v", err)
 	}
-	config.Next = request.Next
-	config.Previous = request.Previous
-	for _, location := range request.Locations {
-		fmt.Println(location.Location)
-		r.cache.Add(url, []byte(location.Location))
+	fmt.Println("Location Areas:")
+	for _, area := range resp.Results {
+		fmt.Printf(" - %s\n", area.Name)
 	}
+	cfg.NextLocationURL = resp.Next
+	cfg.PreviousLocationURL = resp.Previous
 	return nil
+
 }

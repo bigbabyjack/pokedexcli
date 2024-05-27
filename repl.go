@@ -12,19 +12,13 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*config) error
 }
 
 type Repl struct {
 	scanner  *bufio.Scanner
 	commands map[string]cliCommand
-	config   Config
 	cache    *pokecache.Cache
-}
-
-type Config struct {
-	Next     string
-	Previous string
 }
 
 func newRepl() Repl {
@@ -32,23 +26,15 @@ func newRepl() Repl {
 	repl := Repl{
 		scanner:  scanner,
 		commands: make(map[string]cliCommand),
-		config: struct {
-			Next     string
-			Previous string
-		}{
-			Next:     "",
-			Previous: "",
-		},
-		cache: pokecache.NewCache(time.Minute * 5),
+		cache:    pokecache.NewCache(time.Minute * 5),
 	}
-	repl.getCommands()
-
 	return repl
 }
 
-func runRepl() {
+func runRepl(cfg *config) {
 
 	repl := newRepl()
+	repl.commands = getCommands()
 	for {
 		fmt.Print("Pokedex > ")
 		if !repl.scanner.Scan() {
@@ -57,7 +43,7 @@ func runRepl() {
 		input := repl.scanner.Text()
 
 		if cmd, exists := repl.commands[input]; exists {
-			if err := cmd.callback(&repl.config); err != nil {
+			if err := cmd.callback(cfg); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		} else {
