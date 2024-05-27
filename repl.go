@@ -9,10 +9,12 @@ import (
 	"github.com/bigbabyjack/pokedexcli/internal/pokecache"
 )
 
+type area string
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(area, *config) error
 }
 
 type Repl struct {

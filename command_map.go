@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func commandMap(cfg *config) error {
+func commandMap(a area, cfg *config) error {
 	resp, err := cfg.pokeapiClient.ListLocationAreas(cfg.NextLocationURL)
 	if err != nil {
 		log.Fatal(err)
@@ -21,7 +21,7 @@ func commandMap(cfg *config) error {
 
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(a area, cfg *config) error {
 	if cfg.PreviousLocationURL == nil {
 		return errors.New("You are already at the first locations.")
 	}
