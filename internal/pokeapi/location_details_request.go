@@ -2,14 +2,18 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 )
 
-func (c *Client) GetLocationDetails(area string) (LocationDetailsResponse, error) {
+func (c *Client) GetLocationDetails(area *string) (LocationDetailsResponse, error) {
+	if area == nil {
+		return LocationDetailsResponse{}, errors.New("No area specified")
+	}
 	endpoint := "/location-area/"
-	fullURL := baseURL + endpoint + area
+	fullURL := baseURL + endpoint + *area
 
 	// cache check
 	if dat, ok := c.cache.Get(fullURL); ok {

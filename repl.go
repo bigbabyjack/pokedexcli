@@ -44,11 +44,11 @@ func runRepl(cfg *config) {
 		input := repl.scanner.Text()
 		inputSplit := strings.Split(input, " ")
 		if cmd, exists := repl.commands[inputSplit[0]]; exists {
-			var arg string
+			var arg *string
 			if len(inputSplit) > 1 {
-				arg = inputSplit[1]
+				arg = &inputSplit[1]
 			}
-			if err := cmd.callback(&arg, cfg); err != nil {
+			if err := cmd.callback(arg, cfg); err != nil {
 				fmt.Printf("Error: %v\n", err)
 			}
 		} else {
