@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+// TODO: Implement good drop rate
 const maxCatchTreshold float64 = 0.3
 const baseCatchTreshold float64 = 0.3
 

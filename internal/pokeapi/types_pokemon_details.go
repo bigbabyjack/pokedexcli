@@ -1,5 +1,7 @@
 package pokeapi
 
+import "fmt"
+
 type PokemonDetails struct {
 	ID             int    `json:"id"`
 	Name           string `json:"name"`
@@ -270,4 +272,21 @@ type PokemonDetails struct {
 			} `json:"type"`
 		} `json:"types"`
 	} `json:"past_types"`
+}
+
+func (d PokemonDetails) Inspect() error {
+	fmt.Printf("Name: %v\n", d.Name)
+	fmt.Printf("Base exp: %v\n", d.BaseExperience)
+	fmt.Printf("Height: %v\n", d.Height)
+	fmt.Printf("Weight: %v\n", d.Weight)
+	fmt.Println("Stats:")
+	for _, s := range d.Stats {
+		fmt.Printf(" -%v: %v\n", s.Stat.Name, s.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, t := range d.Types {
+		fmt.Printf(" -%v\n", t.Type.Name)
+	}
+
+	return nil
 }
