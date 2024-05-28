@@ -32,6 +32,12 @@ func getCommands() map[string]cliCommand {
 		callback:    commandExplore,
 	}
 
+	commands["catch"] = cliCommand{
+		name:        "catch",
+		description: "Try to catch a pokemon.",
+		callback:    commandCatch,
+	}
+
 	return commands
 
 }
